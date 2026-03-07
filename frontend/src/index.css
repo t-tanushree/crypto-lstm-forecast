@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background-dark: #0f172a;
+  --color-card-dark: #1e293b;
+  --color-accent-blue: #38bdf8;
+  --color-accent-hover: #0ea5e9;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #334155;
+}
+
+.recharts-text {
+  fill: #94a3b8;
+}

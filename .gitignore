@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# Node
+node_modules/
+dist/
+build/
+.npm
+.vite
+
+# App specific
+*.db
+backend/*.db
+backend/crypto_forecast.db
+*.h5
+*.joblib
+backend/models/*.h5
+backend/models/*.joblib
+ml/models/*.h5
+ml/models/*.joblib
+*.log
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
