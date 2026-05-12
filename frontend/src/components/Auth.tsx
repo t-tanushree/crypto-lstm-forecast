@@ -10,8 +10,10 @@ interface AuthProps {
 
 const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     const [isLogin, setIsLogin] = useState(true);
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -28,9 +30,33 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 const res = await axios.post(`${API_BASE_URL}/token`, params);
                 onLogin(res.data.access_token);
             } else {
-                await axios.post(`${API_BASE_URL}/register`, { email, password });
+                // Frontend Validations
+                if (!fullName || fullName.length < 2) {
+                    setError('Full name must be at least 2 characters');
+                    setLoading(false);
+                    return;
+                }
+                if (password.length < 8) {
+                    setError('Password must be at least 8 characters');
+                    setLoading(false);
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    setError('Passwords do not match');
+                    setLoading(false);
+                    return;
+                }
+
+                await axios.post(`${API_BASE_URL}/register`, { 
+                    email, 
+                    full_name: fullName, 
+                    password 
+                });
                 setError('Account created! Please log in.');
                 setIsLogin(true);
+                // Clear fields for login
+                setFullName('');
+                setConfirmPassword('');
             }
         } catch (err: any) {
             const status = err.response?.status;
@@ -56,6 +82,23 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+                {!isLogin && (
+                    <div>
+                        <label className="block text-slate-400 text-xs font-bold uppercase mb-2 ml-1">Full Name</label>
+                        <div className="relative">
+                            <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                            <input
+                                type="text"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
+                                placeholder="John Doe"
+                                required={!isLogin}
+                            />
+                        </div>
+                    </div>
+                )}
+
                 <div>
                     <label className="block text-slate-400 text-xs font-bold uppercase mb-2 ml-1">Email Address</label>
                     <div className="relative">
@@ -85,6 +128,23 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                         />
                     </div>
                 </div>
+
+                {!isLogin && (
+                    <div>
+                        <label className="block text-slate-400 text-xs font-bold uppercase mb-2 ml-1">Confirm Password</label>
+                        <div className="relative">
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
+                                placeholder="••••••••"
+                                required={!isLogin}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {error && (
                     <div className="bg-rose-500/10 border border-rose-500/50 text-rose-500 p-4 rounded-xl text-xs">

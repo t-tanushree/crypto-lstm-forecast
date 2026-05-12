@@ -1,70 +1,80 @@
-import pandas as pd
 import numpy as np
-import os
-import tensorflow as tf
+import pandas as pd
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from sklearn.preprocessing import MinMaxScaler
-import joblib
 
-def create_sequences(data, seq_length):
-    x = []
-    y = []
-    for i in range(len(data) - seq_length):
-        # All columns as features for X
-        x.append(data[i:(i + seq_length), :])
-        # Target: Close price (first column)
-        y.append(data[i + seq_length, 0])
-    return np.array(x), np.array(y)
+class CryptoLSTM:
+    def __init__(self, sequence_length=60):
+        self.sequence_length = sequence_length
+        self.model = None
+        self.scaler = MinMaxScaler(feature_range=(0, 1))
 
-def train_model(symbol, seq_length=60):
-    filename = f"data/raw/{symbol.replace('-', '_').lower()}_daily.csv"
-    if not os.path.exists(filename):
-        print(f"File {filename} not found.")
-        return
+    def build_model(self, input_shape):
+        """
+        Builds a multi-layer LSTM model for time-series forecasting.
+        """
+        model = Sequential([
+            LSTM(units=50, return_sequences=True, input_shape=input_shape),
+            Dropout(0.2),
+            LSTM(units=50, return_sequences=True),
+            Dropout(0.2),
+            LSTM(units=50),
+            Dropout(0.2),
+            Dense(units=1) # Predicting the next close price
+        ])
         
-    df = pd.read_csv(filename)
-    # Selected features for Phase 2
-    features = ['close', 'sma20', 'sma50', 'rsi']
-    data = df[features].values
-    
-    # Scale data
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_data = scaler.fit_transform(data)
-    
-    # Create sequences
-    x, y = create_sequences(scaled_data, seq_length)
-    
-    # No reshape needed here as create_sequences already returns [samples, time steps, features]
-    
-    # Split data
-    train_size = int(len(x) * 0.8)
-    x_train, x_test = x[:train_size], x[train_size:]
-    y_train, y_test = y[:train_size], y[train_size:]
-    
-    # Build LSTM model
-    model = Sequential([
-        LSTM(units=100, return_sequences=True, input_shape=(x.shape[1], x.shape[2])),
-        Dropout(0.2),
-        LSTM(units=50, return_sequences=False),
-        Dropout(0.2),
-        Dense(units=25),
-        Dense(units=1)
-    ])
-    
-    model.compile(optimizer='adam', loss='mean_squared_error')
-    
-    # Train model
-    print(f"Training model for {symbol} with features {features}...")
-    model.fit(x_train, y_train, batch_size=32, epochs=20, validation_data=(x_test, y_test), verbose=1)
-    
-    # Save model and scaler
-    os.makedirs("models", exist_ok=True)
-    model.save(f"models/{symbol.lower()}_lstm_model.h5")
-    joblib.dump(scaler, f"models/{symbol.lower()}_scaler.gz")
-    print(f"Model and scaler saved for {symbol}")
+        model.compile(optimizer='adam', loss='mean_squared_error')
+        self.model = model
+        return model
+
+    def preprocess_data(self, data):
+        """
+        Scales data and creates sequences for training.
+        data: numpy array of shape (n_samples, 1)
+        """
+        scaled_data = self.scaler.fit_transform(data)
+        
+        X, y = [], []
+        for i in range(self.sequence_length, len(scaled_data)):
+            X.append(scaled_data[i-self.sequence_length:i, 0])
+            y.append(scaled_data[i, 0])
+            
+        X, y = np.array(X), np.array(y)
+        X = np.reshape(X, (X.shape[0], X.shape[1], 1))
+        return X, y
+
+    def train(self, X, y, epochs=20, batch_size=32):
+        if self.model is None:
+            self.build_model((X.shape[1], 1))
+        
+        return self.model.fit(X, y, epochs=epochs, batch_size=batch_size, verbose=1)
+
+    def predict(self, last_sequence):
+        """
+        Predicts the next value based on the last sequence of data.
+        last_sequence: numpy array of shape (sequence_length, 1)
+        """
+        scaled_seq = self.scaler.transform(last_sequence)
+        input_seq = np.reshape(scaled_seq, (1, self.sequence_length, 1))
+        
+        prediction = self.model.predict(input_seq, verbose=0)
+        return self.scaler.inverse_transform(prediction)
+
+    def save(self, model_path, scaler_path):
+        self.model.save(model_path)
+        import joblib
+        joblib.dump(self.scaler, scaler_path)
+
+    def load(self, model_path, scaler_path):
+        from tensorflow.keras.models import load_model
+        import joblib
+        self.model = load_model(model_path)
+        self.scaler = joblib.load(scaler_path)
 
 if __name__ == "__main__":
-    symbols = ["BTC-USD", "ETH-USD", "SOL-USD"]
-    for sym in symbols:
-        train_model(sym)
+    print("LSTM Model Architecture initialized.")
+    # Example usage (commented out):
+    # model = CryptoLSTM()
+    # model.build_model((60, 1))
+    # model.model.summary()

@@ -1,0 +1,6 @@
+DEBUG: Entering get_prediction for BTC
+DEBUG: Entering get_prediction for ETH
+DEBUG: Entering get_prediction for ETH
+DEBUG: Entering get_prediction for BTC
+DEBUG: Entering get_prediction for ETH
+DEBUG: Entering get_prediction for SOL

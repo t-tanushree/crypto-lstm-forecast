@@ -6,14 +6,18 @@ import os
 # Create tables
 models.Base.metadata.create_all(bind=engine)
 
+ML_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(ML_DIR)
+
 def migrate_data():
     db = SessionLocal()
     symbols = ["btc-usd", "eth-usd", "sol-usd"]
     
     for symbol in symbols:
-        csv_path = f"data/raw/{symbol.replace('-', '_')}_daily.csv"
+        # data folder is at PROJECT_ROOT/data
+        csv_path = os.path.join(PROJECT_ROOT, "data", "raw", f"{symbol.replace('-', '_')}_daily.csv")
         if not os.path.exists(csv_path):
-            print(f"Skipping {symbol}, CSV not found.")
+            print(f"Skipping {symbol}, CSV not found at {csv_path}")
             continue
             
         print(f"Migrating {symbol}...")

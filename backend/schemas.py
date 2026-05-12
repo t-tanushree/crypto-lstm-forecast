@@ -1,6 +1,11 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from datetime import datetime
 from typing import List, Optional
+
+try:
+    from backend.database import Base
+except ImportError:
+    from database import Base
 
 class CryptoPriceBase(BaseModel):
     symbol: str
@@ -40,10 +45,11 @@ class ForecastResponse(BaseModel):
     indicators: dict # Current indicators: rsi, sma20, sma50
 
 class UserBase(BaseModel):
-    email: str
+    email: EmailStr
+    full_name: str = Field(..., min_length=2, max_length=100)
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=8)
 
 class User(UserBase):
     id: int

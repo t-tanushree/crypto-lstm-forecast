@@ -79,7 +79,10 @@ const SandboxMode: React.FC<SandboxProps> = ({ symbol }) => {
             {loading && (
                 <div className="h-[300px] flex flex-col items-center justify-center text-sky-400">
                     <div className="w-12 h-12 border-4 border-sky-500/20 border-t-sky-500 rounded-full animate-spin mb-4"></div>
-                    <p className="text-sm font-bold animate-pulse">Consulting LSTM Neurons...</p>
+                    <p className="text-sm font-bold animate-pulse text-center">
+                        Processing Simulation... <br />
+                        <span className="text-[10px] font-normal text-slate-500">Checking local DB & reaching out to yFinance for missing history if needed.</span>
+                    </p>
                 </div>
             )}
 
