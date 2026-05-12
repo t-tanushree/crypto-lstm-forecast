@@ -1,6 +1,6 @@
-import React from 'react';
+
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ArrowDownRight, Activity, Zap, BarChart3, TrendingUp, DollarSign } from 'lucide-react';
+import { Activity, Zap, BarChart3, TrendingUp, } from 'lucide-react';
 
 const MarketStats = () => {
   const stats = [
@@ -46,7 +46,7 @@ const MarketStats = () => {
 
   const item = {
     hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100 } }
   };
 
   return (
