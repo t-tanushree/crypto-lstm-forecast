@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface ChartData {
@@ -56,7 +56,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, coins }) => {
             <React.Fragment key={coin}>
               <Area 
                 type="monotone" 
-                dataKey={coin === coins[0] ? 'actual' : `${coin}_actual`} 
+                dataKey={(coin === coins[0] ? 'actual' : `${coin}_actual`)as string } 
                 stroke={colors[index % colors.length]} 
                 strokeWidth={3}
                 fillOpacity={1} 
@@ -65,7 +65,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, coins }) => {
               />
               <Area 
                 type="monotone" 
-                dataKey={coin === coins[0] ? 'predicted' : `${coin}_predicted`} 
+                dataKey={(coin === coins[0] ? 'predicted' : `${coin}_predicted`)as string } 
                 stroke={colors[index % colors.length]} 
                 strokeWidth={2}
                 strokeDasharray="5 5"
